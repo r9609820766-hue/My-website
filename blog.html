@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog – PremiumDev</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f9fafb;
+      transition: background 0.3s;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .dark-mode { background: #0a0c15; color: #e2e8f0; }
+    .dark-mode .navbar, .dark-mode .card, .dark-mode .footer { background: #111827; border-color: #1f2a3e; }
+
+    /* Premium Navbar */
+    .navbar {
+      backdrop-filter: blur(12px);
+      background: rgba(255,255,255,0.92);
+      transition: 0.3s;
+    }
+    .dark-mode .navbar { background: rgba(17,24,39,0.92); }
+    .navbar-brand {
+      font-size: 1.8rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #1e40af, #3b82f6, #06b6d4);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.02em;
+    }
+    .since-badge {
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: #eef2ff;
+      color: #1e40af;
+      border-radius: 40px;
+      padding: 0.2rem 0.8rem;
+      margin-left: 0.75rem;
+    }
+    .dark-mode .since-badge { background: #1e293b; color: #94a3b8; }
+
+    /* Blog Cards */
+    .blog-card {
+      background: white;
+      border-radius: 1.5rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid #eef2ff;
+      overflow: hidden;
+      height: 100%;
+    }
+    .dark-mode .blog-card { background: #1e293b; border-color: #334155; }
+    .blog-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 30px -12px rgba(0,0,0,0.15);
+    }
+    .blog-img {
+      height: 200px;
+      object-fit: cover;
+      transition: 0.5s;
+      width: 100%;
+    }
+    .blog-card:hover .blog-img { transform: scale(1.02); }
+    
+    /* Single Post */
+    .single-post {
+      background: white;
+      border-radius: 1.5rem;
+      border: 1px solid #eef2ff;
+    }
+    .dark-mode .single-post { background: #1e293b; border-color: #334155; }
+    .single-post img { max-width: 100%; border-radius: 1rem; margin: 1.5rem 0; }
+
+    /* Back to top */
+    .back-to-top {
+      position: fixed; bottom: 24px; right: 24px;
+      background: #3b82f6; color: white; width: 48px; height: 48px;
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 100;
+      transition: 0.2s; text-decoration: none;
+    }
+    .back-to-top:hover { background: #2563eb; transform: scale(1.05); }
+    
+    /* Footer stays at bottom */
+    .footer {
+      background: #0f172a;
+      color: #94a3b8;
+      margin-top: auto;
+    }
+    .dark-mode .footer { background: #030614; }
+    main { flex: 1; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg fixed-top shadow-sm py-2">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="index.html">
+      PremiumDev
+      <span class="since-badge">Since 2026</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center gap-2">
+        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="stores.html">Stores</a></li>
+        <li class="nav-item"><a class="nav-link" href="features.html">Features</a></li>
+        <li class="nav-item"><a class="nav-link active fw-semibold" href="blog.html">Blog</a></li>
+        <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+        <li class="nav-item"><button id="darkModeBtn" class="btn btn-outline-secondary rounded-circle"><i class="bi bi-moon-stars"></i></button></li>
+        <li class="nav-item"><button class="btn btn-outline-danger rounded-pill px-3" onclick="window.location.href='admin-login.html'">Admin</button></li>
+        <li class="nav-item"><a href="login.html" class="btn btn-outline-primary rounded-pill px-3">Login</a></li>
+        <li class="nav-item"><a href="register.html" class="btn btn-primary rounded-pill px-3">Register</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content (takes remaining space, pushing footer down) -->
+<main class="py-5 mt-5">
+  <div class="container">
+    <div id="blogContent" class="row g-4 justify-content-center">
+      <div class="col-12 text-center py-5">Loading posts...</div>
+    </div>
+  </div>
+</main>
+
+<!-- Footer (now at bottom) -->
+<footer class="footer py-4">
+  <div class="container text-center">
+    <p class="mb-0">© 2026 All rights reserved. PremiumDev Web Solutions Agency.</p>
+  </div>
+</footer>
+
+<a href="#" class="back-to-top" id="backToTop"><i class="bi bi-arrow-up"></i></a>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  (function() {
+    AOS.init({ duration: 800, once: true });
+
+    const SUPABASE_URL = 'https://xzhmjigiddhzyrhqwgcw.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6aG1qaWdpZGRoenlyaHF3Z2N3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNzkzMjQsImV4cCI6MjA5NTg1NTMyNH0.-G9WLCr4zcK5lCg_nBqBVcClhHJH_xunpflCakaDMEw';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const postId = urlParams.get('id');
+
+    function getDisplayDate(post) {
+      if (post.created_at) return new Date(post.created_at).toDateString();
+      if (post.published_at) return new Date(post.published_at).toDateString();
+      if (post.updated_at) return new Date(post.updated_at).toDateString();
+      return 'Recent';
+    }
+
+    async function loadBlog() {
+      const container = document.getElementById('blogContent');
+      
+      if (postId) {
+        const { data: post, error } = await supabase
+          .from('blogs')
+          .select('*')
+          .eq('id', parseInt(postId))
+          .single();
+        
+        if (error || !post) {
+          container.innerHTML = `
+            <div class="col-md-8">
+              <div class="alert alert-danger">Post not found.</div>
+              <a href="blog.html" class="btn btn-primary">← Back to Blog</a>
+            </div>`;
+          return;
+        }
+        
+        container.innerHTML = `
+          <div class="col-lg-8 mx-auto">
+            <article class="single-post p-4 p-md-5" data-aos="fade-up">
+              <h1 class="display-5 fw-bold">${escapeHtml(post.title)}</h1>
+              <div class="text-muted mb-4">
+                <i class="bi bi-calendar3"></i> ${getDisplayDate(post)} &nbsp;|&nbsp;
+                <i class="bi bi-person"></i> ${escapeHtml(post.author || 'Admin')}
+              </div>
+              ${post.image_url ? `<img src="${post.image_url}" class="img-fluid rounded mb-4" alt="${escapeHtml(post.title)}">` : ''}
+              <div class="single-post-content fs-5 lh-lg">${formatContent(post.content)}</div>
+              <hr class="my-4">
+              <a href="blog.html" class="btn btn-outline-primary"><i class="bi bi-arrow-left"></i> Back to all posts</a>
+            </article>
+          </div>
+        `;
+      } else {
+        const { data: posts, error } = await supabase
+          .from('blogs')
+          .select('*')
+          .order('id', { ascending: false });
+        
+        if (error) {
+          container.innerHTML = `<div class="col-12 text-danger text-center">⚠️ Error: ${error.message}</div>`;
+          return;
+        }
+        
+        if (!posts || posts.length === 0) {
+          container.innerHTML = `<div class="col-12 text-center py-5"><i class="bi bi-newspaper fs-1 text-muted"></i><p class="mt-3">No blog posts yet. Check back soon.</p></div>`;
+          return;
+        }
+        
+        container.innerHTML = posts.map((post, idx) => `
+          <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="${idx * 100}">
+            <div class="blog-card h-100">
+              <img src="${post.image_url || 'https://placehold.co/600x400/e2e8f0/1e293b?text=Blog'}" class="blog-img" alt="${escapeHtml(post.title)}">
+              <div class="p-4 d-flex flex-column h-100">
+                <small class="text-muted"><i class="bi bi-calendar3"></i> ${getDisplayDate(post)}</small>
+                <h5 class="card-title mt-2 fw-bold">${escapeHtml(post.title)}</h5>
+                <p class="card-text text-muted small">${escapeHtml(post.content?.substring(0, 100) || '')}${post.content?.length > 100 ? '...' : ''}</p>
+                <a href="blog.html?id=${post.id}" class="btn btn-link text-primary p-0 mt-auto align-self-start">Read More →</a>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+    }
+
+    function formatContent(content) {
+      if (!content) return '';
+      return content.replace(/\n/g, '<br>');
+    }
+
+    const darkToggle = document.getElementById('darkModeBtn');
+    if (darkToggle) {
+      darkToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+        darkToggle.innerHTML = document.body.classList.contains('dark-mode') ? '<i class="bi bi-sun"></i>' : '<i class="bi bi-moon-stars"></i>';
+      });
+      if (localStorage.getItem('darkMode') === 'true') {
+        document.body.classList.add('dark-mode');
+        darkToggle.innerHTML = '<i class="bi bi-sun"></i>';
+      }
+    }
+
+    const backBtn = document.getElementById('backToTop');
+    backBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    loadBlog();
+  })();
+</script>
+</body>
+</html>

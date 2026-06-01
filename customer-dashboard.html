@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Customer Dashboard | PremiumDev</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <style>
+    * { font-family: 'Segoe UI', system-ui; }
+    body { background: linear-gradient(135deg, #f5f7fc 0%, #eef2f7 100%); }
+    .sidebar {
+      background: linear-gradient(180deg, #0f172a 0%, #0b1120 100%);
+      transition: 0.3s cubic-bezier(0.4,0,0.2,1);
+      z-index: 1050;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.08);
+    }
+    @media (min-width: 768px) {
+      .sidebar { min-height: 100vh; width: 100%; }
+      .sidebar.collapsed { margin-left: -100%; }
+    }
+    @media (max-width: 767px) {
+      .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; overflow-y: auto; }
+      .sidebar.mobile-open { left: 0; }
+      .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); z-index: 1040; display: none; }
+      .sidebar-overlay.active { display: block; }
+    }
+    .sidebar .nav-link {
+      color: #cbd5e1;
+      border-radius: 0.75rem;
+      margin: 0.25rem 0;
+      padding: 0.7rem 1rem;
+      transition: 0.2s;
+    }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active {
+      background: #1e293b;
+      color: white;
+      transform: translateX(4px);
+    }
+    .stat-card {
+      background: white;
+      border-radius: 1.5rem;
+      transition: 0.2s;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+    .toast-msg {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 1200;
+      min-width: 280px;
+      background: #1e293b;
+      color: white;
+      border-radius: 1rem;
+      border-left: 5px solid #38bdf8;
+    }
+    .avatar-preview {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #3b82f6;
+    }
+    .notification-bell { position: relative; cursor: pointer; }
+    .notification-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: #ef4444;
+      color: white;
+      border-radius: 50%;
+      width: 18px;
+      height: 18px;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+<div class="container-fluid p-0">
+  <div class="row g-0">
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+    <!-- Sidebar -->
+    <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+      <div class="text-center py-4 border-bottom border-secondary">
+        <img id="sidebarAvatar" src="https://via.placeholder.com/80" class="rounded-circle mb-2" width="80" height="80" style="object-fit:cover; border:2px solid white">
+        <h5 class="text-white mt-2 fw-bold" id="sidebarName">Customer</h5>
+        <p class="text-muted small mb-0" id="userEmail">email@example.com</p>
+      </div>
+      <ul class="nav flex-column px-2 mt-3">
+        <li><a class="nav-link active" href="#" data-section="profile"><i class="bi bi-person me-2"></i> Profile</a></li>
+        <li><a class="nav-link" href="#" data-section="orders"><i class="bi bi-cart me-2"></i> My Orders</a></li>
+        <li><a class="nav-link" href="#" data-section="bookings"><i class="bi bi-calendar-check me-2"></i> Bookings</a></li>
+        <li><a class="nav-link" href="#" data-section="invoices"><i class="bi bi-receipt me-2"></i> Invoices & Downloads</a></li>
+        <li><a class="nav-link" href="#" data-section="tickets"><i class="bi bi-ticket-perforated me-2"></i> Support Tickets</a></li>
+        <li class="mt-3"><a class="nav-link text-danger" href="#" id="logoutBtn"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-md-9 col-lg-10 content">
+      <div class="d-flex justify-content-between align-items-center p-3">
+        <button class="btn btn-light rounded-pill shadow-sm" id="toggleSidebarBtn"><i class="bi bi-list"></i> Menu</button>
+        <div class="d-flex gap-3 align-items-center">
+          <div class="notification-bell" id="notificationBell">
+            <i class="bi bi-bell fs-4"></i>
+            <span class="notification-badge" id="notificationCount">0</span>
+          </div>
+          <span class="bg-white px-3 py-2 rounded-pill shadow-sm">Welcome, <strong id="userNameDisplay">User</strong></span>
+        </div>
+      </div>
+      <div id="dynamicContent" class="p-3">
+        <div class="text-center py-5">Loading dashboard...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modals (same as before) -->
+<div class="modal fade" id="notificationModal" tabindex="-1"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5>Notifications</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="notificationList">No notifications</div></div></div></div>
+<div class="modal fade" id="changePasswordModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5>Change Password</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="password" id="newPassword" class="form-control mb-2" placeholder="New Password"><input type="password" id="confirmPassword" class="form-control" placeholder="Confirm Password"></div><div class="modal-footer"><button class="btn btn-primary" id="confirmPasswordBtn">Update</button></div></div></div></div>
+<div class="modal fade" id="bookingModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5>New Booking</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="text" id="bookingService" class="form-control mb-2" placeholder="Service Name"><input type="date" id="bookingDate" class="form-control"></div><div class="modal-footer"><button class="btn btn-primary" id="submitBookingBtn">Create Booking</button></div></div></div></div>
+<div class="modal fade" id="ticketModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5>Create Support Ticket</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="text" id="ticketSubject" class="form-control mb-2" placeholder="Subject"><textarea id="ticketMessage" class="form-control" rows="4" placeholder="Describe your issue..."></textarea></div><div class="modal-footer"><button class="btn btn-primary" id="submitTicketBtn">Submit Ticket</button></div></div></div></div>
+<div class="modal fade" id="viewTicketModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header"><h5>Ticket Details</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="viewTicketBody"></div></div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function() {
+  const SUPABASE_URL = 'https://xzhmjigiddhzyrhqwgcw.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6aG1qaWdpZGRoenlyaHF3Z2N3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNzkzMjQsImV4cCI6MjA5NTg1NTMyNH0.-G9WLCr4zcK5lCg_nBqBVcClhHJH_xunpflCakaDMEw';
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  let currentUser = null;
+  let customerData = null;
+
+  function showToast(msg, type) {
+    type = type || 'success';
+    const toast = document.createElement('div');
+    toast.className = 'alert alert-' + type + ' alert-dismissible fade show toast-msg';
+    toast.innerHTML = msg + ' <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert"></button>';
+    document.body.appendChild(toast);
+    setTimeout(function() { toast.remove(); }, 3500);
+  }
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    });
+  }
+
+  function formatPrice(price) {
+    return '₹ ' + Number(price).toLocaleString('en-IN');
+  }
+
+  // Fetch or create customer record
+  async function getOrCreateCustomer(user) {
+    let { data: cust, error } = await supabase.from('customers').select('*').eq('id', user.id).single();
+    if (error && error.code === 'PGRST116') {
+      // No customer record, create one
+      const { data: newCust, error: insertError } = await supabase.from('customers').insert({
+        id: user.id,
+        full_name: user.email.split('@')[0],
+        email: user.email,
+        phone: '',
+        avatar_url: null,
+        created_at: new Date()
+      }).select().single();
+      if (insertError) {
+        console.error('Insert error:', insertError);
+        return null;
+      }
+      cust = newCust;
+    } else if (error) {
+      console.error('Fetch error:', error);
+      return null;
+    }
+    return cust;
+  }
+
+  async function checkAuth() {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (error || !user) {
+      window.location.href = 'login.html';
+      return false;
+    }
+    currentUser = user;
+    customerData = await getOrCreateCustomer(user);
+    if (!customerData) {
+      showToast('Failed to load profile', 'danger');
+      return false;
+    }
+    // Update UI
+    document.getElementById('userEmail').innerText = user.email;
+    document.getElementById('userNameDisplay').innerText = customerData.full_name || user.email;
+    document.getElementById('sidebarName').innerText = customerData.full_name || user.email;
+    if (customerData.avatar_url) {
+      document.getElementById('sidebarAvatar').src = customerData.avatar_url;
+    } else {
+      document.getElementById('sidebarAvatar').src = 'https://via.placeholder.com/80';
+    }
+    return true;
+  }
+
+  async function uploadAvatar(file) {
+    const ext = file.name.split('.').pop();
+    const path = 'avatars/' + currentUser.id + '_' + Date.now() + '.' + ext;
+    const { error: uploadError } = await supabase.storage.from('public_images').upload(path, file);
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      showToast('Upload failed: ' + uploadError.message, 'danger');
+      return null;
+    }
+    const { data: { publicUrl } } = supabase.storage.from('public_images').getPublicUrl(path);
+    // Update customer record with avatar_url
+    const { error: updateError } = await supabase.from('customers').update({ avatar_url: publicUrl }).eq('id', currentUser.id);
+    if (updateError) {
+      showToast('Failed to save avatar: ' + updateError.message, 'danger');
+      return null;
+    }
+    customerData.avatar_url = publicUrl;
+    return publicUrl;
+  }
+
+  // ========== PROFILE ==========
+  async function loadProfile() {
+    // Refresh customer data first
+    const { data: fresh } = await supabase.from('customers').select('*').eq('id', currentUser.id).single();
+    if (fresh) customerData = fresh;
+    var avatarUrl = customerData.avatar_url || 'https://via.placeholder.com/120';
+    var fullName = escapeHtml(customerData.full_name || '');
+    var phone = escapeHtml(customerData.phone || '');
+    var email = escapeHtml(currentUser.email);
+    var html = '<h2><i class="bi bi-person-circle"></i> My Profile</h2>' +
+      '<div class="row"><div class="col-md-4 text-center mb-3"><img id="profileAvatar" src="' + avatarUrl + '" class="avatar-preview"><div class="mt-2"><input type="file" id="avatarInput" accept="image/*" class="form-control form-control-sm"></div></div>' +
+      '<div class="col-md-8"><form id="profileForm"><div class="mb-3"><label>Full Name</label><input type="text" id="fullName" class="form-control" value="' + fullName + '"></div>' +
+      '<div class="mb-3"><label>Email</label><input type="email" class="form-control" value="' + email + '" disabled></div>' +
+      '<div class="mb-3"><label>Phone</label><input type="text" id="phone" class="form-control" value="' + phone + '"></div>' +
+      '<button type="button" class="btn btn-outline-secondary me-2" onclick="window.openChangePassword()">Change Password</button>' +
+      '<button type="submit" class="btn btn-primary">Update Profile</button>' +
+      '<button type="button" class="btn btn-danger ms-2" onclick="window.deactivateAccount()">Deactivate Account</button></form></div></div>';
+    document.getElementById('dynamicContent').innerHTML = html;
+
+    document.getElementById('profileForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const fullNameVal = document.getElementById('fullName').value;
+      const phoneVal = document.getElementById('phone').value;
+      const { error } = await supabase.from('customers').update({ full_name: fullNameVal, phone: phoneVal }).eq('id', currentUser.id);
+      if (error) {
+        showToast(error.message, 'danger');
+      } else {
+        showToast('Profile updated');
+        customerData.full_name = fullNameVal;
+        customerData.phone = phoneVal;
+        document.getElementById('sidebarName').innerText = fullNameVal;
+        document.getElementById('userNameDisplay').innerText = fullNameVal;
+      }
+    });
+
+    document.getElementById('avatarInput').addEventListener('change', async function(e) {
+      const file = e.target.files[0];
+      if (file) {
+        const url = await uploadAvatar(file);
+        if (url) {
+          document.getElementById('profileAvatar').src = url;
+          document.getElementById('sidebarAvatar').src = url;
+          showToast('Avatar updated');
+        }
+      }
+    });
+  }
+
+  window.openChangePassword = function() {
+    new bootstrap.Modal(document.getElementById('changePasswordModal')).show();
+  };
+
+  document.getElementById('confirmPasswordBtn').addEventListener('click', async function() {
+    const newPass = document.getElementById('newPassword').value;
+    const confirm = document.getElementById('confirmPassword').value;
+    if (newPass !== confirm) {
+      showToast('Passwords do not match', 'danger');
+      return;
+    }
+    const { error } = await supabase.auth.updateUser({ password: newPass });
+    if (error) showToast(error.message, 'danger');
+    else {
+      showToast('Password updated. Please login again.');
+      setTimeout(function() {
+        supabase.auth.signOut();
+        window.location.href = 'login.html';
+      }, 1500);
+    }
+    bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+  });
+
+  window.deactivateAccount = async function() {
+    if (confirm('⚠️ Deactivate your account? This will hide your profile.')) {
+      const { error } = await supabase.from('customers').update({ active: false }).eq('id', currentUser.id);
+      if (error) showToast(error.message, 'danger');
+      else {
+        showToast('Account deactivated. Logging out...');
+        setTimeout(function() {
+          supabase.auth.signOut();
+          window.location.href = 'login.html';
+        }, 1500);
+      }
+    }
+  };
+
+  // ========== ORDERS ==========
+  async function loadOrders() {
+    const { data: orders } = await supabase.from('orders').select('*, services(name, price)').eq('customer_email', currentUser.email).order('ordered_at', { ascending: false });
+    let html = '<h2><i class="bi bi-cart"></i> My Orders</h2>';
+    if (!orders || orders.length === 0) {
+      html += '<div class="alert alert-info">No orders found.</div>';
+    } else {
+      html += '<div class="table-responsive"><table class="table table-hover"><thead class="table-light">' +
+        '<tr><th>Service</th><th>Amount</th><th>Status</th><th>Order Date</th><th>Invoice</th></tr>' +
+        '</thead><tbody>';
+      for (var i = 0; i < orders.length; i++) {
+        var o = orders[i];
+        var statusClass = 'warning';
+        if (o.status === 'completed') statusClass = 'success';
+        else if (o.status === 'cancelled') statusClass = 'danger';
+        var serviceName = o.services ? escapeHtml(o.services.name) : '-';
+        var price = o.services ? formatPrice(o.services.price) : '-';
+        html += '<tr><td>' + serviceName + '</td><td>' + price + '</td>' +
+          '<td><span class="badge bg-' + statusClass + '">' + (o.status || 'pending') + '</span></td>' +
+          '<td>' + new Date(o.ordered_at).toLocaleString() + '</td>' +
+          '<td><button class="btn btn-sm btn-outline-primary" onclick="window.downloadInvoice(' + o.id + ', \'' + escapeHtml(o.services?.name) + '\', ' + (o.services?.price || 0) + ')">PDF</button></td></tr>';
+      }
+      html += '</tbody></table></div>';
+    }
+    document.getElementById('dynamicContent').innerHTML = html;
+  }
+
+  window.downloadInvoice = function(id, name, price) {
+    var doc = new jspdf.jsPDF();
+    doc.text('Invoice #' + id, 20, 20);
+    doc.text('Service: ' + name, 20, 40);
+    doc.text('Amount: ' + formatPrice(price), 20, 60);
+    doc.text('Date: ' + new Date().toLocaleString(), 20, 80);
+    doc.save('invoice_' + id + '.pdf');
+    showToast('Invoice for ' + name + ' downloaded');
+  };
+
+  // ========== BOOKINGS ==========
+  async function loadBookings() {
+    const { data: bookings } = await supabase.from('bookings').select('*').eq('user_id', currentUser.id).order('booking_date', { ascending: true });
+    let html = '<h2><i class="bi bi-calendar-check"></i> My Bookings</h2><button class="btn btn-primary mb-3" onclick="window.openBookingModal()">+ New Booking</button>';
+    if (!bookings || bookings.length === 0) {
+      html += '<div class="alert alert-info">No bookings yet.</div>';
+    } else {
+      html += '<div class="table-responsive"><table class="table table-hover"><thead><tr><th>Service</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
+      for (var i = 0; i < bookings.length; i++) {
+        var b = bookings[i];
+        var statusClass = (b.status === 'Confirmed') ? 'success' : 'warning';
+        html += '<tr><td>' + escapeHtml(b.service_name) + '</td><td>' + b.booking_date + '</td>' +
+          '<td><span class="badge bg-' + statusClass + '">' + (b.status || 'Pending') + '</span></td>' +
+          '<td><button class="btn btn-sm btn-danger" onclick="window.cancelBooking(' + b.id + ')">Cancel</button></td></tr>';
+      }
+      html += '</tbody></table></div>';
+    }
+    document.getElementById('dynamicContent').innerHTML = html;
+  }
+
+  window.openBookingModal = function() {
+    document.getElementById('bookingService').value = '';
+    document.getElementById('bookingDate').value = '';
+    new bootstrap.Modal(document.getElementById('bookingModal')).show();
+  };
+
+  document.getElementById('submitBookingBtn').addEventListener('click', async function() {
+    const service = document.getElementById('bookingService').value.trim();
+    const date = document.getElementById('bookingDate').value;
+    if (!service || !date) {
+      showToast('Service and date required', 'danger');
+      return;
+    }
+    const { error } = await supabase.from('bookings').insert({ user_id: currentUser.id, service_name: service, booking_date: date, status: 'Pending' });
+    if (error) showToast(error.message, 'danger');
+    else {
+      showToast('Booking created!');
+      bootstrap.Modal.getInstance(document.getElementById('bookingModal')).hide();
+      loadBookings();
+    }
+  });
+
+  window.cancelBooking = async function(id) {
+    if (confirm('Cancel this booking?')) {
+      const { error } = await supabase.from('bookings').delete().eq('id', id).eq('user_id', currentUser.id);
+      if (error) showToast(error.message, 'danger');
+      else {
+        showToast('Booking cancelled');
+        loadBookings();
+      }
+    }
+  };
+
+  // ========== INVOICES & DOWNLOADS ==========
+  async function loadInvoices() {
+    const { data: orders } = await supabase.from('orders').select('*, services(name, price, demo_url)').eq('customer_email', currentUser.email);
+    let html = '<h2><i class="bi bi-receipt"></i> Invoices & Downloads</h2>';
+    if (!orders || orders.length === 0) {
+      html += '<div class="alert alert-info">No invoices available.</div>';
+    } else {
+      html += '<div class="table-responsive"><table class="table table-hover"><thead><tr><th>Service</th><th>Amount</th><th>Invoice</th><th>Download Product</th></tr></thead><tbody>';
+      for (var i = 0; i < orders.length; i++) {
+        var o = orders[i];
+        var demoLink = (o.services && o.services.demo_url) ? '<a href="' + o.services.demo_url + '" class="btn btn-sm btn-success" target="_blank">Download</a>' : '-';
+        html += '<tr><td>' + escapeHtml(o.services?.name) + '</td><td>' + formatPrice(o.services?.price) + '</td>' +
+          '<td><button class="btn btn-sm btn-primary" onclick="window.downloadInvoice(' + o.id + ', \'' + escapeHtml(o.services?.name) + '\', ' + (o.services?.price || 0) + ')">PDF</button></td>' +
+          '<td>' + demoLink + '</td></tr>';
+      }
+      html += '</tbody></table></div>';
+    }
+    document.getElementById('dynamicContent').innerHTML = html;
+  }
+
+  // ========== SUPPORT TICKETS ==========
+  async function loadTickets() {
+    const { data: tickets } = await supabase.from('support_tickets').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false });
+    let html = '<h2><i class="bi bi-ticket-perforated"></i> Support Tickets</h2><button class="btn btn-primary mb-3" onclick="window.openTicketModal()">+ Create New Ticket</button>';
+    if (!tickets || tickets.length === 0) {
+      html += '<div class="alert alert-info">No tickets yet. Create one!</div>';
+    } else {
+      html += '<div class="table-responsive"><table class="table table-hover"><thead><tr><th>#ID</th><th>Subject</th><th>Status</th><th>Created</th><th>Action</th></tr></thead><tbody>';
+      for (var i = 0; i < tickets.length; i++) {
+        var t = tickets[i];
+        var statusClass = (t.status === 'Open') ? 'warning' : 'success';
+        html += '<tr><td>#' + t.id + '</td><td>' + escapeHtml(t.subject) + '</td>' +
+          '<td><span class="badge bg-' + statusClass + '">' + t.status + '</span></td>' +
+          '<td>' + new Date(t.created_at).toLocaleString() + '</td>' +
+          '<td><button class="btn btn-sm btn-info" onclick="window.viewTicket(' + t.id + ')">View</button></td></tr>';
+      }
+      html += '</tbody></table></div>';
+    }
+    document.getElementById('dynamicContent').innerHTML = html;
+  }
+
+  window.openTicketModal = function() {
+    document.getElementById('ticketSubject').value = '';
+    document.getElementById('ticketMessage').value = '';
+    new bootstrap.Modal(document.getElementById('ticketModal')).show();
+  };
+
+  document.getElementById('submitTicketBtn').addEventListener('click', async function() {
+    const subject = document.getElementById('ticketSubject').value.trim();
+    const message = document.getElementById('ticketMessage').value.trim();
+    if (!subject || !message) {
+      showToast('Subject and message required', 'danger');
+      return;
+    }
+    const { error } = await supabase.from('support_tickets').insert({ user_id: currentUser.id, subject: subject, message: message, status: 'Open' });
+    if (error) showToast(error.message, 'danger');
+    else {
+      showToast('Ticket created successfully');
+      bootstrap.Modal.getInstance(document.getElementById('ticketModal')).hide();
+      loadTickets();
+    }
+  });
+
+  window.viewTicket = async function(id) {
+    const { data: ticket } = await supabase.from('support_tickets').select('*').eq('id', id).single();
+    if (!ticket) return;
+    const { data: replies } = await supabase.from('ticket_replies').select('*').eq('ticket_id', id).order('created_at', { ascending: true });
+    let repliesHtml = '';
+    if (replies && replies.length) {
+      repliesHtml = '<div class="mt-3"><strong>Replies:</strong><div class="border p-2 mt-1">';
+      for (var i = 0; i < replies.length; i++) {
+        var r = replies[i];
+        repliesHtml += '<div><strong>' + (r.is_admin ? 'Support Agent' : 'You') + ':</strong> ' + escapeHtml(r.message) + '<br><small>' + new Date(r.created_at).toLocaleString() + '</small></div><hr>';
+      }
+      repliesHtml += '</div></div>';
+    }
+    document.getElementById('viewTicketBody').innerHTML = 
+      '<div><strong>Subject:</strong> ' + escapeHtml(ticket.subject) + '</div>' +
+      '<div class="mt-2"><strong>Message:</strong><p>' + escapeHtml(ticket.message) + '</p></div>' +
+      '<div><strong>Status:</strong> <span class="badge bg-' + (ticket.status === 'Open' ? 'warning' : 'success') + '">' + ticket.status + '</span></div>' +
+      '<div><strong>Created:</strong> ' + new Date(ticket.created_at).toLocaleString() + '</div>' +
+      repliesHtml +
+      '<div class="mt-3"><textarea id="replyMessage" class="form-control" rows="2" placeholder="Add a reply..."></textarea>' +
+      '<button class="btn btn-primary mt-2" onclick="window.addReply(' + id + ')">Send Reply</button></div>';
+    new bootstrap.Modal(document.getElementById('viewTicketModal')).show();
+  };
+
+  window.addReply = async function(ticketId) {
+    const reply = document.getElementById('replyMessage') ? document.getElementById('replyMessage').value.trim() : '';
+    if (!reply) {
+      showToast('Reply cannot be empty', 'danger');
+      return;
+    }
+    const { error } = await supabase.from('ticket_replies').insert({ ticket_id: ticketId, user_id: currentUser.id, message: reply, is_admin: false });
+    if (error) showToast(error.message, 'danger');
+    else {
+      showToast('Reply added. Support will respond shortly.');
+      if (document.getElementById('replyMessage')) document.getElementById('replyMessage').value = '';
+      window.viewTicket(ticketId);
+    }
+  };
+
+  // ========== NOTIFICATIONS ==========
+  function loadNotifications() {
+    var notif = JSON.parse(localStorage.getItem('notifications') || '[]');
+    document.getElementById('notificationCount').innerText = notif.filter(function(n) { return !n.read; }).length;
+    var html = notif.length ? notif.map(function(n) {
+      return '<div class="border-bottom p-2 ' + (n.read ? '' : 'bg-light') + '">' + n.msg + '<br><small>' + new Date(n.date).toLocaleString() + '</small></div>';
+    }).join('') : 'No notifications';
+    document.getElementById('notificationList').innerHTML = html;
+  }
+
+  function addNotification(msg) {
+    var notif = JSON.parse(localStorage.getItem('notifications') || '[]');
+    notif.unshift({ msg: msg, date: new Date(), read: false });
+    notif = notif.slice(0, 20);
+    localStorage.setItem('notifications', JSON.stringify(notif));
+    document.getElementById('notificationCount').innerText = notif.filter(function(n) { return !n.read; }).length;
+    showToast(msg, 'info');
+  }
+
+  document.getElementById('notificationBell').addEventListener('click', function() {
+    loadNotifications();
+    new bootstrap.Modal(document.getElementById('notificationModal')).show();
+  });
+
+  // ========== ROUTING ==========
+  var sections = {
+    profile: loadProfile,
+    orders: loadOrders,
+    bookings: loadBookings,
+    invoices: loadInvoices,
+    tickets: loadTickets
+  };
+
+  document.querySelectorAll('[data-section]').forEach(function(link) {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      var section = this.getAttribute('data-section');
+      if (sections[section]) {
+        document.querySelectorAll('[data-section]').forEach(function(l) { l.classList.remove('active'); });
+        this.classList.add('active');
+        sections[section]();
+        if (window.innerWidth < 768) {
+          document.getElementById('sidebar').classList.remove('mobile-open');
+          document.getElementById('sidebarOverlay').classList.remove('active');
+        }
+      } else {
+        showToast('Coming soon', 'warning');
+      }
+    });
+  });
+
+  // Sidebar toggle
+  var toggleBtn = document.getElementById('toggleSidebarBtn');
+  var sidebar = document.getElementById('sidebar');
+  var overlay = document.getElementById('sidebarOverlay');
+  toggleBtn.addEventListener('click', function() {
+    if (window.innerWidth < 768) {
+      sidebar.classList.toggle('mobile-open');
+      overlay.classList.toggle('active');
+    } else {
+      sidebar.classList.toggle('collapsed');
+    }
+  });
+  overlay.addEventListener('click', function() {
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('active');
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', async function() {
+    await supabase.auth.signOut();
+    localStorage.clear();
+    window.location.href = 'login.html';
+  });
+
+  checkAuth().then(function() {
+    loadProfile();
+    addNotification('Welcome back to your dashboard!');
+  });
+})();
+</script>
+</body>
+</html>

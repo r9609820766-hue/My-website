@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>PremiumDev Admin | Complete Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    * { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; }
+    body { background: #f0f4f8; overflow-x: hidden; }
+    .sidebar {
+      background: linear-gradient(180deg, #0f172a 0%, #0b1120 100%);
+      transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 1050;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.1);
+    }
+    @media (min-width: 768px) {
+      .sidebar { min-height: 100vh; width: 100%; }
+      .sidebar.collapsed { margin-left: -100%; }
+      .content { transition: 0.3s; }
+    }
+    @media (max-width: 767px) {
+      .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; overflow-y: auto; }
+      .sidebar.mobile-open { left: 0; }
+      .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); z-index: 1040; display: none; }
+      .sidebar-overlay.active { display: block; }
+    }
+    .sidebar .nav-link {
+      color: #cbd5e1;
+      border-radius: 0.75rem;
+      margin: 0.25rem 0;
+      font-weight: 500;
+      padding: 0.7rem 1rem;
+      transition: all 0.2s;
+    }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active {
+      background: rgba(255,255,255,0.1);
+      color: white;
+      transform: translateX(4px);
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(2px);
+      border-radius: 1.5rem;
+      transition: all 0.25s;
+      border: 1px solid rgba(255,255,255,0.3);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    }
+    .stat-card:hover { transform: translateY(-5px); box-shadow: 0 20px 30px -12px rgba(0,0,0,0.15); }
+    .quick-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 1.25rem;
+      transition: 0.2s;
+      cursor: pointer;
+    }
+    .quick-card:hover { background: #f8fafc; transform: translateY(-3px); border-color: #94a3b8; box-shadow: 0 12px 20px -8px rgba(0,0,0,0.1); }
+    .toast-msg {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 1200;
+      min-width: 280px;
+      background: #1e293b;
+      color: white;
+      border-radius: 1rem;
+      border-left: 5px solid #38bdf8;
+      padding: 0.75rem 1rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    }
+    .table-responsive {
+      border-radius: 1.25rem;
+      background: white;
+      padding: 0.75rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    .hamburger-toggle {
+      background: white;
+      border: none;
+      font-size: 1.6rem;
+      padding: 0.4rem 0.9rem;
+      border-radius: 14px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    .upload-preview { max-width: 80px; max-height: 80px; border-radius: 12px; object-fit: cover; margin-top: 8px; border: 1px solid #ddd; }
+    .btn-primary, .btn-success, .btn-warning, .btn-danger { border-radius: 0.75rem; font-weight: 500; transition: all 0.2s; }
+    .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.05); }
+    .status-badge { padding: 0.35rem 0.75rem; border-radius: 2rem; font-size: 0.75rem; font-weight: 600; }
+    .modal-content { border-radius: 1.25rem; }
+    .service-card {
+      background: white;
+      border-radius: 1.25rem;
+      transition: 0.2s;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+    }
+    .service-card:hover { transform: translateY(-4px); box-shadow: 0 12px 20px -8px rgba(0,0,0,0.1); border-color: #cbd5e1; }
+    .service-img { width: 100%; height: 160px; object-fit: cover; background: #f1f5f9; }
+  </style>
+</head>
+<body>
+<div class="container-fluid p-0">
+  <div class="row g-0">
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+    <!-- Sidebar -->
+    <div class="col-md-3 col-lg-2 px-0 sidebar" id="sidebar">
+      <div class="text-center py-4 border-bottom border-secondary">
+        <i class="bi bi-briefcase-fill fs-1 text-white"></i>
+        <h5 class="text-white mt-2 fw-bold">PremiumDev</h5>
+        <p class="text-muted small mb-0" id="roleBadge">Admin</p>
+      </div>
+      <ul class="nav flex-column px-2 mt-3">
+        <li class="nav-item"><a class="nav-link active" href="#" data-section="dashboard"><i class="bi bi-speedometer2 me-2"></i> Dashboard</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="services"><i class="bi bi-grid me-2"></i> Services</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="features"><i class="bi bi-stars me-2"></i> Features</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="blogs"><i class="bi bi-newspaper me-2"></i> Blogs</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="users"><i class="bi bi-people me-2"></i> Users</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="customers"><i class="bi bi-person-badge me-2"></i> Customers</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="orders"><i class="bi bi-cart me-2"></i> Orders</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="bookings"><i class="bi bi-calendar-check me-2"></i> Bookings</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="tickets"><i class="bi bi-ticket-perforated me-2"></i> Support Tickets</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="messages"><i class="bi bi-envelope me-2"></i> Messages</a></li>
+        <li class="nav-item" id="staffNavItem"><a class="nav-link" href="#" data-section="staff"><i class="bi bi-person-badge me-2"></i> Staff</a></li>
+        <li class="nav-item"><a class="nav-link" href="#" data-section="settings"><i class="bi bi-gear me-2"></i> Contact Settings</a></li>
+        <li class="nav-item mt-3"><a class="nav-link text-danger" href="#" id="logoutBtn"><i class="bi bi-box-arrow-right me-2"></i> Logout</a></li>
+      </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="col-md-9 col-lg-10 content" id="mainContent">
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <button class="hamburger-toggle" id="toggleSidebarBtn"><i class="bi bi-list"></i></button>
+        <span class="bg-white px-3 py-2 rounded-pill shadow-sm fw-semibold"><i class="bi bi-currency-rupee text-warning"></i> Indian Rupee (₹)</span>
+      </div>
+      <div id="dynamicContent">Loading dashboard...</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  (function() {
+    const SUPABASE_URL = 'https://xzhmjigiddhzyrhqwgcw.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6aG1qaWdpZGRoenlyaHF3Z2N3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNzkzMjQsImV4cCI6MjA5NTg1NTMyNH0.-G9WLCr4zcK5lCg_nBqBVcClhHJH_xunpflCakaDMEw';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    let currentRole = localStorage.getItem('staffRole') || 'admin';
+    const BUCKET_NAME = 'public_images';
+
+    function showToast(msg, type = 'success') {
+      const toastDiv = document.createElement('div');
+      toastDiv.className = `toast-msg alert alert-${type}`;
+      toastDiv.innerHTML = `${msg} <button type="button" class="btn-close btn-close-white float-end" data-bs-dismiss="alert"></button>`;
+      document.body.appendChild(toastDiv);
+      setTimeout(() => toastDiv.remove(), 3500);
+    }
+    function escapeHtml(str) { if (!str) return ''; return String(str).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
+    function formatPrice(price) { return `₹ ${Number(price).toLocaleString('en-IN')}`; }
+
+    // ---------- Image Upload ----------
+    async function uploadFile(file, folder = 'services') {
+      if (!file) return null;
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 10)}.${fileExt}`;
+      const filePath = `${folder}/${fileName}`;
+      const { data, error } = await supabase.storage.from(BUCKET_NAME).upload(filePath, file);
+      if (error) { showToast(`Upload failed: ${error.message}`, 'danger'); return null; }
+      const { data: { publicUrl } } = supabase.storage.from(BUCKET_NAME).getPublicUrl(filePath);
+      return publicUrl;
+    }
+
+    function setupImageUpload(modalId, fileInputId, previewId, onComplete) {
+      const input = document.getElementById(fileInputId);
+      if (!input) return;
+      input.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const url = await uploadFile(file, 'images');
+          if (url) {
+            const preview = document.getElementById(previewId);
+            if (preview) { preview.src = url; preview.style.display = 'block'; }
+            if (onComplete) onComplete(url);
+            showToast('Image uploaded!');
+          }
+        }
+      });
+    }
+
+    function ensureModal(modalId, titleHtml, bodyHtmlGenerator) {
+      let modalElem = document.getElementById(modalId);
+      if (modalElem) modalElem.remove();
+      const modalDiv = document.createElement('div');
+      modalDiv.className = 'modal fade';
+      modalDiv.id = modalId;
+      modalDiv.setAttribute('tabindex', '-1');
+      modalDiv.innerHTML = `
+        <div class="modal-dialog modal-lg">
+          <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(90deg,#0f172a,#111827); color:white;">
+              <h5 class="modal-title">${titleHtml}</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="${modalId}Body"></div>
+            <div class="modal-footer">
+              <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+              <button class="btn btn-primary" id="${modalId}SaveBtn">Save Changes</button>
+            </div>
+          </div>
+        </div>`;
+      document.body.appendChild(modalDiv);
+      document.getElementById(`${modalId}Body`).innerHTML = bodyHtmlGenerator();
+      return modalDiv;
+    }
+
+    async function checkAuth() {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error || !user) { window.location.href = 'admin-login.html'; return false; }
+      document.getElementById('roleBadge').innerText = `Role: ${currentRole.toUpperCase()}`;
+      if (currentRole !== 'admin') document.getElementById('staffNavItem')?.remove();
+      return true;
+    }
+
+    // ======================= SERVICES (Card Grid) =======================
+    async function loadServices() {
+      const { data: services } = await supabase.from('services').select('*').order('id');
+      const total = services?.length || 0;
+      let html = `<div class="row g-3 mb-4"><div class="col-md-3"><div class="stat-card p-3 text-center"><i class="bi bi-bag fs-2 text-success"></i><h5>Total Services</h5><h2 class="text-success">${total}</h2></div></div></div>
+      <div class="d-flex justify-content-between align-items-center flex-wrap mb-3"><h2>Services</h2><button class="btn btn-primary" onclick="window.openServiceModal()">+ New Service</button></div>
+      <div class="row g-4">`;
+      if (services && services.length) {
+        services.forEach(s => {
+          html += `<div class="col-md-6 col-lg-4">
+            <div class="service-card p-3">
+              ${s.image_url ? `<img src="${escapeHtml(s.image_url)}" class="service-img mb-3" style="height:160px; width:100%; object-fit:cover; border-radius:1rem;">` : `<div class="service-img mb-3 d-flex align-items-center justify-content-center bg-light" style="height:160px; border-radius:1rem;"><i class="bi bi-image fs-1 text-muted"></i></div>`}
+              <h5 class="fw-bold">${escapeHtml(s.name)}</h5>
+              <p class="text-muted small">${escapeHtml(s.description?.slice(0,80)) || 'No description'}</p>
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <span class="badge bg-warning text-dark px-3 py-2">${formatPrice(s.price)}</span>
+                ${s.is_trending ? '<span class="badge bg-danger"><i class="bi bi-fire"></i> Trending</span>' : ''}
+              </div>
+              <div class="mt-3 d-flex gap-2">
+                <button class="btn btn-sm btn-outline-primary flex-fill" onclick="window.editService(${s.id})"><i class="bi bi-pencil"></i> Edit</button>
+                <button class="btn btn-sm btn-outline-danger flex-fill" onclick="window.deleteService(${s.id})"><i class="bi bi-trash"></i> Delete</button>
+              </div>
+            </div>
+          </div>`;
+        });
+      } else {
+        html += `<div class="col-12 text-center py-5"><div class="alert alert-info">No services yet. Click "New Service" to add one.</div></div>`;
+      }
+      html += `</div>`;
+      document.getElementById('dynamicContent').innerHTML = html;
+      ensureModal('serviceModal', 'Service Form', () => `
+        <input type="hidden" id="serviceId">
+        <div class="mb-3"><label>Name</label><input id="sName" class="form-control"></div>
+        <div class="mb-3"><label>Description</label><textarea id="sDesc" class="form-control" rows="2"></textarea></div>
+        <div class="row"><div class="col-md-6"><label>Price (₹)</label><input id="sPrice" type="number" class="form-control"></div>
+        <div class="col-md-6"><label>Image Upload</label><input type="file" id="sImageFile" class="form-control" accept="image/*"><img id="sImagePreview" class="upload-preview" style="display:none"></div></div>
+        <div class="row mt-2"><div class="col-md-6"><label>Demo URL</label><input id="sDemo" class="form-control"></div>
+        <div class="col-md-6"><div class="form-check mt-4"><input type="checkbox" id="sTrending" class="form-check-input"><label>Trending</label></div></div></div>
+      `);
+      setupImageUpload('serviceModal', 'sImageFile', 'sImagePreview', (url) => { window._tempServiceImage = url; });
+      document.getElementById('serviceModalSaveBtn')?.addEventListener('click', window.saveService, { once: true });
+    }
+    window.openServiceModal = () => {
+      document.getElementById('serviceId').value = '';
+      document.getElementById('sName').value = '';
+      document.getElementById('sDesc').value = '';
+      document.getElementById('sPrice').value = '';
+      document.getElementById('sDemo').value = '';
+      document.getElementById('sTrending').checked = false;
+      document.getElementById('sImagePreview').style.display = 'none';
+      window._tempServiceImage = null;
+      new bootstrap.Modal(document.getElementById('serviceModal')).show();
+    };
+    window.editService = async (id) => {
+      const { data } = await supabase.from('services').select('*').eq('id', id).single();
+      if(data) {
+        document.getElementById('serviceId').value = data.id;
+        document.getElementById('sName').value = data.name;
+        document.getElementById('sDesc').value = data.description;
+        document.getElementById('sPrice').value = data.price;
+        document.getElementById('sDemo').value = data.demo_url;
+        document.getElementById('sTrending').checked = data.is_trending;
+        if(data.image_url) { document.getElementById('sImagePreview').src = data.image_url; document.getElementById('sImagePreview').style.display = 'block'; window._tempServiceImage = data.image_url; }
+        new bootstrap.Modal(document.getElementById('serviceModal')).show();
+      }
+    };
+    window.saveService = async () => {
+      const id = document.getElementById('serviceId').value;
+      let imageUrl = window._tempServiceImage;
+      const fileInput = document.getElementById('sImageFile');
+      if (fileInput && fileInput.files.length) {
+        const uploaded = await uploadFile(fileInput.files[0], 'services');
+        if (uploaded) imageUrl = uploaded;
+      }
+      const payload = {
+        name: document.getElementById('sName').value,
+        description: document.getElementById('sDesc').value,
+        price: parseFloat(document.getElementById('sPrice').value) || 0,
+        image_url: imageUrl,
+        demo_url: document.getElementById('sDemo').value,
+        is_trending: document.getElementById('sTrending').checked
+      };
+      let result;
+      if (id) result = await supabase.from('services').update(payload).eq('id', id);
+      else result = await supabase.from('services').insert(payload);
+      if (result.error) showToast(result.error.message, 'danger');
+      else { showToast(id ? 'Service updated' : 'Service created'); bootstrap.Modal.getInstance(document.getElementById('serviceModal')).hide(); loadServices(); }
+    };
+    window.deleteService = async (id) => { if(confirm('Delete permanently?')) { await supabase.from('services').delete().eq('id', id); loadServices(); } };
+
+    // ======================= FEATURES =======================
+    async function loadFeatures() {
+      const { data: features } = await supabase.from('features').select('*').order('display_order');
+      let html = `<div class="d-flex justify-content-between"><h2>Features</h2><button class="btn btn-primary" onclick="window.openFeatureModal()">+ Add</button></div>
+      <div class="table-responsive"><table class="table"><thead><tr><th>Icon</th><th>Title</th><th>Active</th><th>Actions</th></tr></thead><tbody>`;
+      if (features && features.length) {
+        features.forEach(f => {
+          html += `<tr>
+            <td><i class="bi ${f.icon_class} fs-3"></i></td>
+            <td><strong>${escapeHtml(f.title)}</strong><br><small>${escapeHtml(f.description)}</small></td>
+            <td>${f.is_active ? '✅' : '❌'}</td>
+            <td><button class="btn btn-sm btn-primary" onclick="window.editFeature(${f.id})">Edit</button> <button class="btn btn-sm btn-danger" onclick="window.deleteFeature(${f.id})">Del</button></td>
+          </tr>`;
+        });
+      } else {
+        html += `<tr><td colspan="4" class="text-center">No features yet. Add one.`;
+      }
+      html += `</tbody><tr></div>`;
+      document.getElementById('dynamicContent').innerHTML = html;
+      ensureModal('featureModal', 'Feature Details', () => `<input type="hidden" id="featureId"><div class="mb-2"><label>Title</label><input id="fTitle" class="form-control"></div><div class="mb-2"><label>Description</label><textarea id="fDesc" class="form-control" rows="2"></textarea></div><div class="mb-2"><label>Icon Class</label><input id="fIcon" class="form-control" value="bi-star"></div><div class="form-check"><input type="checkbox" id="fActive" class="form-check-input" checked><label>Active</label></div>`);
+      document.getElementById('featureModalSaveBtn')?.addEventListener('click', window.saveFeature, { once: true });
+    }
+    window.openFeatureModal = () => { document.getElementById('featureId').value = ''; document.getElementById('fTitle').value = ''; document.getElementById('fDesc').value = ''; document.getElementById('fIcon').value = 'bi-star'; document.getElementById('fActive').checked = true; new bootstrap.Modal(document.getElementById('featureModal')).show(); };
+    window.editFeature = async (id) => { const { data } = await supabase.from('features').select('*').eq('id', id).single(); if(data) { document.getElementById('featureId').value = data.id; document.getElementById('fTitle').value = data.title; document.getElementById('fDesc').value = data.description; document.getElementById('fIcon').value = data.icon_class; document.getElementById('fActive').checked = data.is_active; new bootstrap.Modal(document.getElementById('featureModal')).show(); } };
+    window.saveFeature = async () => {
+      const id = document.getElementById('featureId').value;
+      const payload = { title: document.getElementById('fTitle').value, description: document.getElementById('fDesc').value, icon_class: document.getElementById('fIcon').value, display_order: 0, is_active: document.getElementById('fActive').checked };
+      let result; if(id) result = await supabase.from('features').update(payload).eq('id', id); else result = await supabase.from('features').insert(payload);
+      if(result.error) showToast(result.error.message,'danger'); else { showToast('Saved'); bootstrap.Modal.getInstance(document.getElementById('featureModal')).hide(); loadFeatures(); }
+    };
+    window.deleteFeature = async (id) => { if(confirm('Delete feature?')) { await supabase.from('features').delete().eq('id', id); loadFeatures(); } };
+
+    // ======================= BLOGS =======================
+    async function loadBlogs() {
+      const { data: blogs } = await supabase.from('blogs').select('*').order('created_at', { ascending: false });
+      let html = `<div class="d-flex justify-content-between"><h2>Blogs</h2><button class="btn btn-primary" onclick="window.openBlogModal()">+ Create Post</button></div>
+      <div class="table-responsive"><table class="table"><thead><tr><th>Image</th><th>Title</th><th>Date</th><th>Actions</th></tr></thead><tbody>`;
+      if (blogs && blogs.length) {
+        blogs.forEach(b => {
+          html += `<tr>
+            <td>${b.image_url ? `<img src="${escapeHtml(b.image_url)}" width="45" class="rounded">` : '-'}</td>
+            <td><strong>${escapeHtml(b.title)}</strong><br><small>${escapeHtml(b.content?.slice(0,60))}</small></td>
+            <td>${new Date(b.created_at).toDateString()}</td>
+            <td><button class="btn btn-sm btn-warning" onclick="window.editBlog(${b.id})">Edit</button> <button class="btn btn-sm btn-danger" onclick="window.deleteBlog(${b.id})">Del</button></td>
+          </tr>`;
+        });
+      } else {
+        html += `<tr><td colspan="4" class="text-center">No blogs found. Create one.`;
+      }
+      html += `</tbody></table></div>`;
+      document.getElementById('dynamicContent').innerHTML = html;
+      ensureModal('blogModal', 'Blog Post', () => `<input type="hidden" id="blogId"><div class="mb-2"><label>Title</label><input id="blogTitle" class="form-control"></div><div class="mb-2"><label>Content</label><textarea id="blogContent" rows="4" class="form-control"></textarea></div><div class="mb-2"><label>Cover Image</label><input type="file" id="blogImageFile" class="form-control"><img id="blogImagePreview" class="upload-preview" style="display:none"></div><div class="mb-2"><label>Author</label><input id="blogAuthor" class="form-control" value="Admin"></div>`);
+      setupImageUpload('blogModal', 'blogImageFile', 'blogImagePreview', (url) => { window._tempBlogImage = url; });
+      document.getElementById('blogModalSaveBtn')?.addEventListener('click', window.saveBlog, { once: true });
+    }
+    window.openBlogModal = () => { document.getElementById('blogId').value = ''; document.getElementById('blogTitle').value = ''; document.getElementById('blogContent').value = ''; document.getElementById('blogAuthor').value = 'Admin'; document.getElementById('blogImagePreview').style.display = 'none'; window._tempBlogImage = null; new bootstrap.Modal(document.getElementById('blogModal')).show(); };
+    window.editBlog = async (id) => { const { data } = await supabase.from('blogs').select('*').eq('id', id).single(); if(data) { document.getElementById('blogId').value = data.id; document.getElementById('blogTitle').value = data.title; document.getElementById('blogContent').value = data.content; document.getElementById('blogAuthor').value = data.author || 'Admin'; if(data.image_url) { document.getElementById('blogImagePreview').src = data.image_url; document.getElementById('blogImagePreview').style.display = 'block'; window._tempBlogImage = data.image_url; } new bootstrap.Modal(document.getElementById('blogModal')).show(); } };
+    window.saveBlog = async () => {
+      const id = document.getElementById('blogId').value;
+      let imageUrl = window._tempBlogImage;
+      const fileInput = document.getElementById('blogImageFile');
+      if (fileInput && fileInput.files.length) { const url = await uploadFile(fileInput.files[0], 'blogs'); if(url) imageUrl = url; }
+      const payload = { title: document.getElementById('blogTitle').value, content: document.getElementById('blogContent').value, image_url: imageUrl, author: document.getElementById('blogAuthor').value || 'Admin', created_at: new Date().toISOString() };
+      let result; if(id) result = await supabase.from('blogs').update(payload).eq('id', id); else result = await supabase.from('blogs').insert(payload);
+      if(result.error) showToast(result.error.message,'danger'); else { showToast('Blog saved'); bootstrap.Modal.getInstance(document.getElementById('blogModal')).hide(); loadBlogs(); }
+    };
+    window.deleteBlog = async (id) => { if(confirm('Delete blog?')) { await supabase.from('blogs').delete().eq('id', id); loadBlogs(); } };
+
+    // ======================= USERS =======================
+    async function loadUsers() {
+      const { data: users } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
+      const total = users?.length || 0;
+      let html = `<div class="row g-3 mb-4"><div class="col-md-3"><div class="stat-card p-3 text-center"><i class="bi bi-people fs-2 text-primary"></i><h5>Total Registered Users</h5><h2 class="text-primary">${total}</h2></div></div></div>
+      <h2>Registered Users</h2>
+      <div class="table-responsive"><table class="table table-hover"><thead class="table-light"><tr><th>Name</th><th>Email</th><th>Phone</th><th>Registered On</th></tr></thead><tbody>`;
+      if (users && users.length) {
+        users.forEach(u => { html += `<tr><td>${escapeHtml(u.full_name)}</td><td><strong>${escapeHtml(u.email)}</strong></td><td>${escapeHtml(u.phone || '-')}</td><td>${new Date(u.created_at).toLocaleString()}</td></tr>`; });
+      } else {
+        html += `<tr><td colspan="4" class="text-center">No users registered yet.`;
+      }
+      html += `</tbody></table></div>`;
+      document.getElementById('dynamicContent').innerHTML = html;
+    }
+
+    // ======================= CUSTOMERS =======================
+    async function loadCustomers() {
+      const { data: customers } = await supabase.from('customers').select('*').order('created_at', { ascending: false });
+      const total = customers?.length || 0;
+      if (!customers || customers.length === 0) {
+        document.getElementById('dynamicContent').innerHTML = `<div class="row g-3 mb-4"><div class="col-md-3"><div class="stat-card p-3 text-center"><i class="bi bi-person-badge fs-2 text-primary"></i><h5>Total Customers</h5><h2 class="text-primary">0</h2></div></div></div><h2>Customers</h2><div class="alert alert-warning">No customers found.</div>`;
+        return;
+      }
+      let html = `<div class="row g-3 mb-4"><div class="col-md-3"><div class="stat-card p-3 text-center"><i class="bi bi-person-badge fs-2 text-primary"></i><h5>Total Customers</h5><h2 class="text-primary">${total}</h2></div></div></div>
+      <h2>Customers & Order History</h2>`;
+      for (const cust of customers) {
+        const { data: orders } = await supabase.from('orders').select('*, services(name, price)').eq('customer_email', cust.email).order('ordered_at', { ascending: false });
+        html += `<div class="card mb-3 p-3 shadow-sm">
+          <div class="d-flex justify-content-between flex-wrap align-items-start">
+            <div><h5>${escapeHtml(cust.full_name)}</h5><p><strong>Email:</strong> ${escapeHtml(cust.email)}<br><strong>Phone:</strong> ${escapeHtml(cust.phone || '—')}<br><small>Customer since: ${new Date(cust.created_at).toLocaleDateString()}</small></p></div>
+            <div><span class="badge bg-primary me-2">Orders: ${orders?.length || 0}</span><button class="btn btn-sm btn-outline-danger" onclick="window.deleteCustomer('${cust.id}')"><i class="bi bi-trash"></i> Delete Customer</button></div>
+          </div>
+          <div class="mt-3"><strong>Order History:</strong>`;
+        if (orders && orders.length) {
+          html += `<div class="table-responsive mt-2"><table class="table table-sm"><thead><tr><th>Service</th><th>Amount (₹)</th><th>Status</th><th>Ordered On</th></tr></thead><tbody>`;
+          orders.forEach(o => { html += `<tr><td>${escapeHtml(o.services?.name || 'Unknown')}</td><td>${formatPrice(o.services?.price || 0)}</td><td>${o.status || 'pending'}</td><td>${new Date(o.ordered_at).toLocaleString()}</td></tr>`; });
+          html += `</tbody></table></div>`;
+        } else { html += `<div class="text-muted">No orders placed yet.</div>`; }
+        html += `</div></div>`;
+      }
+      document.getElementById('dynamicContent').innerHTML = html;
+    }
+    window.deleteCustomer = async (customerId) => {
+      if (!confirm('Delete this customer and ALL their orders?')) return;
+      const { data: cust } = await supabase.from('customers').select('email').eq('id', customerId).single();
+      if (cust?.email) await supabase.from('orders').delete().eq('customer_email', cust.email);
+      await supabase.from('customers').delete().eq('id', customerId);
+      showToast('Customer and orders deleted');
+      loadCustomers();
+    };
+
+    // ======================= ORDERS =======================
+    async function loadOrders() {
+      const { data: orders } = await supabase.from('orders').select('*, services(name, price)').order('ordered_at', { ascending: false });
+      const total = orders?.length || 0;
+      const pending = orders?.filter(o => o.status === 'pending').length || 0;
+      const processing = orders?.filter(o => o.status === 'processing').length || 0;
+      const accepted = orders?.filter(o => o.status === 'accepted').length || 0;
+      const completed = orders?.filter(o => o.status === 'completed').length || 0;
+      const cancelled = orders?.filter(o => o.status === 'cancelled').length || 0;
+      let html = `<div class="row g-3 mb-4">
+        <div class="col-md-2"><div class="stat-card p-2 text-center"><h6>Total Orders</h6><h3 class="text-primary">${total}</h3></div></div>
+        <div class="col-md-2"><div class="stat-card p-2 text-center"><h6>Pending</h6><h3 class="text-warning">${pending}</h3></div></div>
+        <div class="col-md-2"><div class="stat-card p-2 text-center"><h6>Processing</h6><h3 class="text-info">${processing}</h3></div></div>
+        <div class="col-md-2"><div class="stat-card p-2 text-center"><h6>Accepted</h6><h3 class="text-success">${accepted}</h3></div></div>
+        <div class="col-md-2"><div class="stat-card p-2 text-center"><h6>Completed</h6><h3 class="text-success">${completed}</h3></div></div>
+        <div class="col-md-2"><div class="stat-card p-2 text-center"><h6>Cancelled</h6><h3 class="text-danger">${cancelled}</h3></div></div>
+      </div>
+      <h2>All Orders</h2>
+      <div class="table-responsive"><table class="table table-hover"><thead class="table-light"><tr><th>Customer</th><th>Email</th><th>Service</th><th>Amount</th><th>Status</th><th>Order Date</th><th>Actions</th><tr></thead><tbody>`;
+      if (orders && orders.length) {
+        orders.forEach(o => {
+          let statusClass = 'warning';
+          if (o.status === 'processing') statusClass = 'info';
+          else if (o.status === 'accepted') statusClass = 'success';
+          else if (o.status === 'completed') statusClass = 'success';
+          else if (o.status === 'cancelled') statusClass = 'danger';
+          html += `<tr>
+            <td>${escapeHtml(o.customer_name)}</td>
+            <td>${escapeHtml(o.customer_email)}</td>
+            <td>${escapeHtml(o.services?.name || '-')}</td>
+            <td class="fw-bold">${formatPrice(o.services?.price || 0)}</td>
+            <td><span class="status-badge bg-${statusClass} text-white">${o.status || 'pending'}</span></td>
+            <td>${new Date(o.ordered_at).toLocaleString()}</td>
+            <td><select class="form-select form-select-sm" style="width:130px" onchange="window.updateOrderStatus(${o.id}, this.value)">
+                <option value="pending" ${o.status === 'pending' ? 'selected' : ''}>Pending</option>
+                <option value="processing" ${o.status === 'processing' ? 'selected' : ''}>Processing</option>
+                <option value="accepted" ${o.status === 'accepted' ? 'selected' : ''}>Accepted</option>
+                <option value="completed" ${o.status === 'completed' ? 'selected' : ''}>Completed</option>
+                <option value="cancelled" ${o.status === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+              </select></td>
+          </tr>`;
+        });
+      } else {
+        html += `<td><td colspan="7" class="text-center">No orders yet.`;
+      }
+      html += `</tbody></table></div>`;
+      document.getElementById('dynamicContent').innerHTML = html;
+    }
+    window.updateOrderStatus = async (orderId, newStatus) => {
+      const { error } = await supabase.from('orders').update({ status: newStatus }).eq('id', orderId);
+      if (error) showToast(error.message, 'danger');
+      else { showToast(`Order status updated to ${newStatus}`); loadOrders(); }
+    };
+
+    // ======================= BOOKINGS (Manual join with robust column detection) =======================
+    async function loadBookings() {
+      try {
+        // Fetch all bookings
+        const { data: bookings, error: bookingsError } = await supabase
+          .from('bookings')
+          .select('*')
+          .order('booking_date', { ascending: false });
+        
+        if (bookingsError) throw bookingsError;
+        
+        // Fetch all customers – select all columns to avoid missing column errors
+        const { data: customers, error: customersError } = await supabase
+          .from('customers')
+          .select('*');
+        
+        if (customersError) throw customersError;
+        
+        // Create a map with customer id as key
+        const customerMap = new Map();
+        customers?.forEach(c => customerMap.set(c.id, c));
+        
+        // Enrich bookings with customer data (safe fallback)
+        const enrichedBookings = bookings?.map(b => {
+          const cust = customerMap.get(b.user_id) || {};
+          return {
+            ...b,
+            customer_name: cust.full_name || cust.name || 'N/A',
+            customer_email: cust.email || cust.customer_email || 'N/A'
+          };
+        }) || [];
+        
+        const total = enrichedBookings.length;
+        const pending = enrichedBookings.filter(b => b.status === 'Pending').length;
+        const confirmed = enrichedBookings.filter(b => b.status === 'Confirmed').length;
+        const cancelled = enrichedBookings.filter(b => b.status === 'Cancelled').length;
+        
+        let html = `<div class="row g-3 mb-4">
+          <div class="col-md-3"><div class="stat-card p-2 text-center"><h6>Total Bookings</h6><h3>${total}</h3></div></div>
+          <div class="col-md-3"><div class="stat-card p-2 text-center"><h6>Pending</h6><h3 class="text-warning">${pending}</h3></div></div>
+          <div class="col-md-3"><div class="stat-card p-2 text-center"><h6>Confirmed</h6><h3 class="text-success">${confirmed}</h3></div></div>
+          <div class="col-md-3"><div class="stat-card p-2 text-center"><h6>Cancelled</h6><h3 class="text-danger">${cancelled}</h3></div></div>
+        </div>
+        <h2>Customer Bookings</h2>
+        <div class="table-responsive"><table class="table table-hover"><thead class="table-light"><tr><th>Customer</th><th>Email</th><th>Service</th><th>Booking Date</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
+        
+        if (enrichedBookings.length) {
+          enrichedBookings.forEach(b => {
+            html += `<tr>
+              <td>${escapeHtml(b.customer_name)}</td>
+              <td>${escapeHtml(b.customer_email)}</td>
+              <td>${escapeHtml(b.service_name)}</td>
+              <td>${b.booking_date}</td>
+              <td><span class="badge bg-${b.status === 'Confirmed' ? 'success' : b.status === 'Cancelled' ? 'danger' : 'warning'}">${b.status || 'Pending'}</span></td>
+              <td>
+                <select class="form-select form-select-sm" style="width:120px" onchange="window.updateBookingStatus(${b.id}, this.value)">
+                  <option value="Pending" ${b.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                  <option value="Confirmed" ${b.status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+                  <option value="Cancelled" ${b.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                </select>
+                <button class="btn btn-sm btn-danger ms-1" onclick="window.deleteBooking(${b.id})"><i class="bi bi-trash"></i></button>
+              </td>
+            </tr>`;
+          });
+        } else {
+          html += `<tr><td colspan="6" class="text-center">No bookings yet.`;
+        }
+        html += `</tbody></table></div>`;
+        document.getElementById('dynamicContent').innerHTML = html;
+      } catch (err) {
+        console.error('Bookings error:', err);
+        showToast('Error loading bookings: ' + err.message, 'danger');
+        document.getElementById('dynamicContent').innerHTML = `<div class="alert alert-danger">Failed to load bookings. Please ensure the customers table has an email column. ${err.message}</div>`;
+      }
+    }
+    
+    window.updateBookingStatus = async (id, newStatus) => {
+      const { error } = await supabase.from('bookings').update({ status: newStatus }).eq('id', id);
+      if (error) showToast(error.message, 'danger');
+      else { showToast(`Booking status updated to ${newStatus}`); loadBookings(); }
+    };
+    
+    window.deleteBooking = async (id) => {
+      if (confirm('Delete this booking?')) {
+        const { error } = await supabase.from('bookings').delete().eq('id', id);
+        if (error) showToast(error.message, 'danger');
+        else { showToast('Booking deleted'); loadBookings(); }
+      }
+    };
+
+    // ======================= SUPPORT TICKETS (Manual join with robust column detection) =======================
+    async function loadTickets() {
+      try {
+        // Fetch all tickets
+        const { data: tickets, error: ticketsError } = await supabase
+          .from('support_tickets')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (ticketsError) throw ticketsError;
+        
+        // Fetch all customers
+        const { data: customers, error: customersError } = await supabase
+          .from('customers')
+          .select('*');
+        
+        if (customersError) throw customersError;
+        
+        const customerMap = new Map();
+        customers?.forEach(c => customerMap.set(c.id, c));
+        
+        const enrichedTickets = tickets?.map(t => {
+          const cust = customerMap.get(t.user_id) || {};
+          return {
+            ...t,
+            customer_name: cust.full_name || cust.name || 'N/A',
+            customer_email: cust.email || cust.customer_email || 'N/A'
+          };
+        }) || [];
+        
+        const total = enrichedTickets.length;
+        const open = enrichedTickets.filter(t => t.status === 'Open').length;
+        const inProgress = enrichedTickets.filter(t => t.status === 'In Progress').length;
+        const closed = enrichedTickets.filter(t => t.status === 'Closed').length;
+        
+        let html = `<div class="row g-3 mb-4">
+          <div class="col-md-3"><div class="stat-card p-2 text-center"><h6>Total Tickets</h6><h3>${total}</h3></div></div>
+          <div class="col-md-3"><div class="stat-card p-2 text-center"><h6>Open</h6><h3 class="text-warning">${open}</h3></div></div>
+          <div class="col-md-3"><div class="stat-card p-2 text-center"><h6>In Progress</h6><h3 class="text-info">${inProgress}</h3></div></div>
+          <div class="col-md-3"><div class="stat-card p-2 text-center"><h6>Closed</h6><h3 class="text-success">${closed}</h3></div></div>
+        </div>
+        <h2>Support Tickets</h2>
+        <div class="table-responsive"><table class="table table-hover"><thead class="table-light"><tr><th>ID</th><th>Customer</th><th>Email</th><th>Subject</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead><tbody>`;
+        
+        if (enrichedTickets.length) {
+          enrichedTickets.forEach(t => {
+            let statusClass = 'warning';
+            if (t.status === 'In Progress') statusClass = 'info';
+            else if (t.status === 'Closed') statusClass = 'success';
+            html += `<tr>
+              <td>#${t.id}</td>
+              <td>${escapeHtml(t.customer_name)}</td>
+              <td>${escapeHtml(t.customer_email)}</td>
+              <td>${escapeHtml(t.subject)}</td>
+              <td><span class="badge bg-${statusClass}">${t.status}</span></td>
+              <td>${new Date(t.created_at).toLocaleString()}</td>
+              <td>
+                <button class="btn btn-sm btn-info" onclick="window.viewTicketDetails(${t.id})"><i class="bi bi-eye"></i> View</button>
+                <select class="form-select form-select-sm d-inline-block w-auto ms-1" onchange="window.updateTicketStatus(${t.id}, this.value)">
+                  <option value="Open" ${t.status === 'Open' ? 'selected' : ''}>Open</option>
+                  <option value="In Progress" ${t.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                  <option value="Closed" ${t.status === 'Closed' ? 'selected' : ''}>Closed</option>
+                </select>
+                <button class="btn btn-sm btn-danger ms-1" onclick="window.deleteTicket(${t.id})"><i class="bi bi-trash"></i></button>
+              </td>
+            </tr>`;
+          });
+        } else {
+          html += `<tr><td colspan="7" class="text-center">No tickets yet.`;
+        }
+        html += `</tbody></table></div>`;
+        document.getElementById('dynamicContent').innerHTML = html;
+      } catch (err) {
+        console.error('Tickets error:', err);
+        showToast('Error loading tickets: ' + err.message, 'danger');
+        document.getElementById('dynamicContent').innerHTML = `<div class="alert alert-danger">Failed to load tickets. ${err.message}</div>`;
+      }
+    }
+    
+    window.updateTicketStatus = async (id, newStatus) => {
+      const { error } = await supabase.from('support_tickets').update({ status: newStatus }).eq('id', id);
+      if (error) showToast(error.message, 'danger');
+      else { showToast(`Ticket status updated to ${newStatus}`); loadTickets(); }
+    };
+    
+    window.deleteTicket = async (id) => {
+      if (confirm('Delete this ticket and all replies?')) {
+        await supabase.from('ticket_replies').delete().eq('ticket_id', id);
+        const { error } = await supabase.from('support_tickets').delete().eq('id', id);
+        if (error) showToast(error.message, 'danger');
+        else { showToast('Ticket deleted'); loadTickets(); }
+      }
+    };
+    
+    window.viewTicketDetails = async (id) => {
+      const { data: ticket } = await supabase.from('support_tickets').select('*').eq('id', id).single();
+      if (!ticket) return;
+      const { data: replies } = await supabase.from('ticket_replies').select('*').eq('ticket_id', id).order('created_at', { ascending: true });
+      // Get customer details
+      const { data: customer } = await supabase.from('customers').select('*').eq('id', ticket.user_id).single();
+      const customerName = customer?.full_name || customer?.name || 'N/A';
+      const customerEmail = customer?.email || customer?.customer_email || 'N/A';
+      let repliesHtml = '';
+      if (replies && replies.length) {
+        repliesHtml = '<hr><h6>Replies</h6>';
+        replies.forEach(r => {
+          repliesHtml += `<div class="border p-2 mb-2 rounded"><strong>${r.is_admin ? 'Admin' : customerName}:</strong> ${escapeHtml(r.message)}<br><small>${new Date(r.created_at).toLocaleString()}</small></div>`;
+        });
+      }
+      const modalHtml = `
+        <div class="modal fade" id="ticketDetailModal" tabindex="-1">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header"><h5>Ticket #${ticket.id}</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+              <div class="modal-body">
+                <p><strong>Customer:</strong> ${escapeHtml(customerName)} (${escapeHtml(customerEmail)})</p>
+                <p><strong>Subject:</strong> ${escapeHtml(ticket.subject)}</p>
+                <p><strong>Message:</strong><br>${escapeHtml(ticket.message)}</p>
+                <p><strong>Status:</strong> ${ticket.status}</p>
+                ${repliesHtml}
+                <hr>
+                <textarea id="adminReplyText" class="form-control" rows="3" placeholder="Write your reply..."></textarea>
+                <button class="btn btn-primary mt-2" onclick="window.sendAdminReply(${ticket.id})">Send Reply</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+      const modal = new bootstrap.Modal(document.getElementById('ticketDetailModal'));
+      modal.show();
+      document.getElementById('ticketDetailModal').addEventListener('hidden.bs.modal', () => { document.getElementById('ticketDetailModal').remove(); });
+    };
+    
+    window.sendAdminReply = async (ticketId) => {
+      const reply = document.getElementById('adminReplyText')?.value.trim();
+      if (!reply) { showToast('Reply cannot be empty', 'danger'); return; }
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase.from('ticket_replies').insert({ ticket_id: ticketId, user_id: user?.id, message: reply, is_admin: true });
+      if (error) showToast(error.message, 'danger');
+      else { showToast('Reply sent'); const modal = bootstrap.Modal.getInstance(document.getElementById('ticketDetailModal')); modal.hide(); loadTickets(); }
+    };
+
+    // ======================= MESSAGES =======================
+    async function loadMessages() {
+      const { data: messages } = await supabase.from('contact_messages').select('*').order('created_at', { ascending: false });
+      let html = `<h2>Contact Messages</h2><div class="table-responsive"><table class="table"><thead class="table-light"><tr><th>Name</th><th>Email</th><th>Message</th><th>Date</th><th>Action</th></tr></thead><tbody>`;
+      if (messages && messages.length) {
+        messages.forEach(m => { html += `<td>${escapeHtml(m.name)}</td><td>${escapeHtml(m.email)}</td><td>${escapeHtml(m.message)}</td><td>${new Date(m.created_at).toLocaleString()}</td><td><button class="btn btn-sm btn-danger" onclick="window.deleteMessage('${m.id}')">Delete</button></td></td>`; });
+      } else {
+        html += `<table><td colspan="5" class="text-center">No messages.`;
+      }
+      html += `</tbody></td></div>`;
+      document.getElementById('dynamicContent').innerHTML = html;
+    }
+    window.deleteMessage = async (id) => { if(confirm('Delete message?')) { await supabase.from('contact_messages').delete().eq('id', id); loadMessages(); } };
+
+    // ======================= STAFF =======================
+    async function loadStaff() {
+      if (currentRole !== 'admin') { document.getElementById('dynamicContent').innerHTML = '<div class="alert alert-danger">Access denied. Admin only.</div>'; return; }
+      const { data: staffs } = await supabase.from('staff').select('*');
+      let html = `<h2>Staff Management</h2><button class="btn btn-success mb-3" onclick="window.openStaffSelector()">+ Promote User to Staff</button>
+      <div class="table-responsive"><table class="table"><thead class="table-light"><tr><th>Email</th><th>Role</th><th>Banned</th><th>Actions</th></tr></thead><tbody>`;
+      if (staffs && staffs.length) {
+        staffs.forEach(s => { html += `<tr><td>${escapeHtml(s.email)}</td><td>${s.role}</td><td>${s.banned ? '🔴 Banned' : '🟢 Active'}</td><td><button class="btn btn-sm btn-warning" onclick="window.toggleBan('${s.id}',${s.banned})">${s.banned?'Unban':'Ban'}</button> <button class="btn btn-sm btn-danger" onclick="window.deleteStaff('${s.id}')">Delete</button></td></tr>`; });
+      } else {
+        html += `<tr><td colspan="4" class="text-center">No staff members.`;
+      }
+      html += `</tbody></td></div>`;
+      document.getElementById('dynamicContent').innerHTML = html;
+    }
+    window.openStaffSelector = async () => {
+      const { data: customers } = await supabase.from('customers').select('id, email, full_name');
+      if (!customers?.length) { showToast('No registered customers found', 'danger'); return; }
+      let options = customers.map(c => `<option value="${c.id}|${c.email}">${c.email} (${c.full_name})</option>`).join('');
+      const modalHtml = `<div class="modal fade" id="staffSelectModal"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5>Promote user to staff</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><select id="staffUserSelect" class="form-select">${options}</select><label class="mt-2">Role:</label><select id="staffRoleSelect" class="form-select"><option value="employee">Employee</option><option value="admin">Admin</option></select></div><div class="modal-footer"><button class="btn btn-primary" id="confirmStaffAdd">Add Staff</button></div></div></div></div>`;
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+      const modal = new bootstrap.Modal(document.getElementById('staffSelectModal'));
+      modal.show();
+      document.getElementById('confirmStaffAdd').onclick = async () => {
+        const [userId, email] = document.getElementById('staffUserSelect').value.split('|');
+        const role = document.getElementById('staffRoleSelect').value;
+        const { error } = await supabase.from('staff').insert({ id: userId, email, role, banned: false, full_name: 'Staff' });
+        if (error) showToast(error.message, 'danger');
+        else { showToast(`${email} promoted to staff`); modal.hide(); document.getElementById('staffSelectModal')?.remove(); loadStaff(); }
+      };
+    };
+    window.toggleBan = async (id, cur) => { await supabase.from('staff').update({ banned: !cur }).eq('id', id); loadStaff(); };
+    window.deleteStaff = async (id) => { if (confirm('Remove staff?')) { await supabase.from('staff').delete().eq('id', id); loadStaff(); } };
+
+    // ======================= SETTINGS =======================
+    async function loadSettings() {
+      let { data } = await supabase.from('contact_settings').select('*').eq('id',1).single();
+      if (!data) data = { phone: '', email: '', address: '', map_embed_url: '' };
+      const html = `<h2>Contact Settings</h2><form id="settingsForm" class="bg-white p-4 rounded-4"><div class="mb-3"><label>Phone</label><input id="setPhone" class="form-control" value="${escapeHtml(data.phone)}"></div>
+      <div class="mb-3"><label>Email</label><input id="setEmail" class="form-control" value="${escapeHtml(data.email)}"></div>
+      <div class="mb-3"><label>Address</label><input id="setAddress" class="form-control" value="${escapeHtml(data.address)}"></div>
+      <div class="mb-3"><label>Google Map URL</label><textarea id="setMap" class="form-control" rows="3">${escapeHtml(data.map_embed_url)}</textarea></div>
+      <button type="submit" class="btn btn-primary">Save Settings</button></form>`;
+      document.getElementById('dynamicContent').innerHTML = html;
+      document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const updates = { phone: document.getElementById('setPhone').value, email: document.getElementById('setEmail').value, address: document.getElementById('setAddress').value, map_embed_url: document.getElementById('setMap').value };
+        const { error } = await supabase.from('contact_settings').upsert({ id:1, ...updates });
+        if (error) showToast(error.message, 'danger'); else showToast('Settings saved');
+      });
+    }
+
+    // ======================= DASHBOARD =======================
+    async function loadDashboard() {
+      const { count: totalUsers } = await supabase.from('customers').select('*', { count: 'exact', head: true });
+      const { count: totalProducts } = await supabase.from('services').select('*', { count: 'exact', head: true });
+      const { count: messages } = await supabase.from('contact_messages').select('*', { count: 'exact', head: true });
+      const { data: allOrders } = await supabase.from('orders').select('*, services(price)');
+      let totalRevenue = 0;
+      allOrders?.forEach(o => { if(o.services?.price) totalRevenue += o.services.price; });
+      const { data: recentOrders } = await supabase.from('orders').select('*, services(name, price)').order('ordered_at', { ascending: false }).limit(5);
+      const { count: totalBookings } = await supabase.from('bookings').select('*', { count: 'exact', head: true });
+      const { count: openTickets } = await supabase.from('support_tickets').select('*', { count: 'exact', head: true }).eq('status', 'Open');
+      let recentOrdersHtml = '';
+      if (recentOrders && recentOrders.length) {
+        recentOrders.forEach(o => {
+          recentOrdersHtml += `<tr><td>${escapeHtml(o.customer_name)}</td><td>${o.services?.name}</td><td class="fw-bold">${formatPrice(o.services?.price || 0)}</td></tr>`;
+        });
+      } else {
+        recentOrdersHtml = `<tr><td colspan="3">No orders yet.`;
+      }
+      const html = `<div><h2>Dashboard</h2><p class="text-muted">Overview (₹)</p>
+      <div class="row g-4 mb-5">
+        <div class="col-md-3"><div class="stat-card p-3"><i class="bi bi-people fs-2 text-primary"></i><h6>Total Customers</h6><h2>${totalUsers || 0}</h2></div></div>
+        <div class="col-md-3"><div class="stat-card p-3"><i class="bi bi-bag fs-2 text-success"></i><h6>Services</h6><h2>${totalProducts || 0}</h2></div></div>
+        <div class="col-md-3"><div class="stat-card p-3"><i class="bi bi-graph-up fs-2 text-warning"></i><h6>Revenue</h6><h2>${formatPrice(totalRevenue)}</h2></div></div>
+        <div class="col-md-3"><div class="stat-card p-3"><i class="bi bi-envelope fs-2 text-danger"></i><h6>Messages</h6><h2>${messages || 0}</h2></div></div>
+      </div>
+      <div class="row g-4 mb-4">
+        <div class="col-md-4"><div class="stat-card p-3 text-center"><i class="bi bi-calendar-check fs-2 text-primary"></i><h6>Bookings</h6><h2>${totalBookings || 0}</h2></div></div>
+        <div class="col-md-4"><div class="stat-card p-3 text-center"><i class="bi bi-ticket-perforated fs-2 text-warning"></i><h6>Open Tickets</h6><h2>${openTickets || 0}</h2></div></div>
+        <div class="col-md-4"><div class="stat-card p-3 text-center"><i class="bi bi-cart fs-2 text-success"></i><h6>Orders</h6><h2>${allOrders?.length || 0}</h2></div></div>
+      </div>
+      <div class="row g-4 mb-4">
+        <div class="col-md-12"><div class="card p-3 rounded-4 shadow-sm"><h5>Recent Orders</h5><div style="max-height:250px; overflow-y:auto"><table class="table table-sm">${recentOrdersHtml}</table></div></div></div>
+      </div>
+      <div class="row g-3 mt-2">
+        <div class="col-md-4"><div class="quick-card p-3 text-center" id="quickAddService"><i class="bi bi-plus-circle fs-1 text-primary"></i><h6>Add Service</h6></div></div>
+        <div class="col-md-4"><div class="quick-card p-3 text-center" id="quickStaff"><i class="bi bi-person-badge fs-1 text-info"></i><h6>Staff Mgmt</h6></div></div>
+        <div class="col-md-4"><div class="quick-card p-3 text-center" id="quickBlog"><i class="bi bi-pencil-square fs-1 text-success"></i><h6>Write Blog</h6></div></div>
+      </div></div>`;
+      document.getElementById('dynamicContent').innerHTML = html;
+      document.getElementById('quickAddService')?.addEventListener('click', () => { document.querySelector('a[data-section="services"]').click(); setTimeout(() => window.openServiceModal(), 200); });
+      document.getElementById('quickStaff')?.addEventListener('click', () => { document.querySelector('a[data-section="staff"]').click(); });
+      document.getElementById('quickBlog')?.addEventListener('click', () => { document.querySelector('a[data-section="blogs"]').click(); setTimeout(() => window.openBlogModal(), 200); });
+    }
+
+    // Router & Sidebar
+    const sections = {
+      dashboard: loadDashboard, services: loadServices, features: loadFeatures, blogs: loadBlogs,
+      users: loadUsers, customers: loadCustomers, orders: loadOrders, bookings: loadBookings,
+      tickets: loadTickets, messages: loadMessages, staff: loadStaff, settings: loadSettings
+    };
+    document.querySelectorAll('[data-section]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const section = link.dataset.section;
+        if (sections[section]) {
+          document.querySelectorAll('[data-section]').forEach(l => l.classList.remove('active'));
+          link.classList.add('active');
+          sections[section]();
+          if (window.innerWidth < 768) { document.getElementById('sidebar').classList.remove('mobile-open'); document.getElementById('sidebarOverlay').classList.remove('active'); }
+        } else showToast('Coming soon', 'warning');
+      });
+    });
+    const toggleBtn = document.getElementById('toggleSidebarBtn');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+    toggleBtn.addEventListener('click', () => {
+      if (window.innerWidth < 768) { sidebar.classList.toggle('mobile-open'); overlay.classList.toggle('active'); }
+      else sidebar.classList.toggle('collapsed');
+    });
+    overlay.addEventListener('click', () => { sidebar.classList.remove('mobile-open'); overlay.classList.remove('active'); });
+    document.getElementById('logoutBtn').addEventListener('click', async () => { await supabase.auth.signOut(); localStorage.removeItem('staffRole'); window.location.href = 'admin-login.html'; });
+    checkAuth().then(() => loadDashboard());
+  })();
+</script>
+</body>
+</html>
