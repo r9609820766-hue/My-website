@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PremiumDev – Elite Digital Agency</title>
+  <!-- Bootstrap 5 + Icons + Google Fonts + AOS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #f9fafb; transition: background 0.3s; }
+    .dark-mode { background: #0a0c15; color: #e2e8f0; }
+    .dark-mode .navbar, .dark-mode .footer, .dark-mode .card, .dark-mode .stat-card, .dark-mode .service-card, .dark-mode .blog-card { background: #111827; border-color: #1f2a3e; }
+    .dark-mode .bg-light { background: #111827 !important; }
+    .navbar {
+      backdrop-filter: blur(12px);
+      background: rgba(255,255,255,0.92);
+      transition: 0.3s;
+    }
+    .dark-mode .navbar { background: rgba(17,24,39,0.92); }
+    .navbar-brand {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #1e40af, #3b82f6, #06b6d4);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      letter-spacing: -0.02em;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .since-badge {
+      font-size: 0.8rem;
+      font-weight: 500;
+      background: #eef2ff;
+      color: #1e40af;
+      border-radius: 40px;
+      padding: 0.2rem 0.8rem;
+      margin-left: 0.75rem;
+    }
+    .dark-mode .since-badge { background: #1e293b; color: #94a3b8; }
+    .hero {
+      position: relative;
+      background: radial-gradient(circle at 20% 80%, #1e3a8a, #0f172a);
+      border-radius: 0 0 3rem 3rem;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 80px;
+      background: linear-gradient(135deg, transparent 50%, #f9fafb 50%);
+    }
+    .dark-mode .hero::after { background: linear-gradient(135deg, transparent 50%, #0a0c15 50%); }
+    .glass-card {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 2rem;
+    }
+    .stat-card, .service-card, .blog-card {
+      background: white;
+      border-radius: 1.5rem;
+      transition: all 0.3s;
+      border: 1px solid #eef2ff;
+      overflow: hidden;
+    }
+    .stat-card:hover, .service-card:hover, .blog-card:hover { transform: translateY(-6px); box-shadow: 0 20px 30px -12px rgba(0,0,0,0.12); }
+    .service-img { height: 210px; object-fit: cover; transition: 0.5s; }
+    .service-card:hover .service-img { transform: scale(1.04); }
+    .trending-badge {
+      position: absolute; top: 14px; right: 14px;
+      background: linear-gradient(135deg, #f97316, #f59e0b);
+      color: white; border-radius: 40px; padding: 5px 14px;
+      font-size: 0.7rem; font-weight: bold; z-index: 2;
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+      border: none;
+      color: #0f172a;
+      font-weight: 600;
+    }
+    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -6px #f59e0b; }
+    footer { background: #0f172a; color: #94a3b8; }
+    .dark-mode footer { background: #030614; }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg fixed-top shadow-sm py-3">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="index.html">
+      PremiumDev
+      <span class="since-badge">Since 2026</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center gap-2">
+        <li class="nav-item"><a class="nav-link active fw-semibold" href="index.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="stores.html">Stores</a></li>
+        <li class="nav-item"><a class="nav-link" href="features.html">Features</a></li>
+        <li class="nav-item"><a class="nav-link" href="blog.html">Blog</a></li>
+        <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+        <li class="nav-item"><button id="darkModeBtn" class="btn btn-outline-secondary rounded-circle"><i class="bi bi-moon-stars"></i></button></li>
+        <li class="nav-item"><a href="login.html" class="btn btn-outline-primary rounded-pill px-3">Login</a></li>
+        <li class="nav-item"><a href="register.html" class="btn btn-primary rounded-pill px-3">Register</a></li>
+        <li class="nav-item"><button class="btn btn-outline-danger rounded-pill px-3" onclick="window.location.href='admin-login.html'">Admin</button></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="hero text-white pt-5 pb-5 mt-5">
+  <div class="container py-5">
+    <div class="row align-items-center">
+      <div class="col-lg-6 text-center text-lg-start" data-aos="fade-right">
+        <div class="d-inline-block mb-3 px-3 py-1 bg-warning text-dark rounded-pill">✨ Premium Since 2026 ✨</div>
+        <h1 class="display-3 fw-bold">Crafting <span class="text-warning">Digital Excellence</span><br>for Tomorrow's Leaders</h1>
+        <p class="lead my-4">Enterprise web apps, AI‑driven solutions, and unmatched support – trusted by 500+ global brands.</p>
+        <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-lg-start">
+          <a href="stores.html" class="btn btn-light btn-lg rounded-pill px-4"><i class="bi bi-cart-plus"></i> Explore Services</a>
+          <a href="contact.html" class="btn btn-outline-light btn-lg rounded-pill px-4"><i class="bi bi-chat-dots"></i> Talk to Expert</a>
+          <a href="register.html" class="btn btn-warning btn-lg rounded-pill px-4"><i class="bi bi-person-plus"></i> Get Started</a>
+        </div>
+      </div>
+      <div class="col-lg-6 text-center mt-5 mt-lg-0" data-aos="fade-left">
+        <div class="glass-card p-4 d-inline-block">
+          <i class="bi bi-award fs-1 text-warning"></i>
+          <p class="mt-2 fw-light">#1 Rated Agency on Trustpilot</p>
+          <div><i class="bi bi-star-fill text-warning"></i><i class="bi bi-star-fill text-warning"></i><i class="bi bi-star-fill text-warning"></i><i class="bi bi-star-fill text-warning"></i><i class="bi bi-star-fill text-warning"></i></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Live Stats Section -->
+<section class="py-5">
+  <div class="container">
+    <div class="row g-4 text-center">
+      <div class="col-md-4" data-aos="zoom-in">
+        <div class="stat-card p-4">
+          <i class="bi bi-emoji-smile fs-1 text-primary"></i>
+          <h2 class="mt-2 fw-bold"><span id="happyCount">0</span>+</h2>
+          <p class="text-muted">Happy Customers</p>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="zoom-in" data-aos-delay="100">
+        <div class="stat-card p-4">
+          <i class="bi bi-briefcase fs-1 text-primary"></i>
+          <h2 class="mt-2 fw-bold"><span id="serviceCount">0</span>+</h2>
+          <p class="text-muted">Services</p>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="zoom-in" data-aos-delay="200">
+        <div class="stat-card p-4">
+          <i class="bi bi-graph-up fs-1 text-primary"></i>
+          <h2 class="mt-2 fw-bold"><span id="successRate">0</span>%</h2>
+          <p class="text-muted">Client Success Rate</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Trending Services (Live) -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <span class="badge bg-primary px-3 py-2 rounded-pill">🔥 Most Wanted</span>
+      <h2 class="fw-bold mt-3">Trending Services</h2>
+      <p class="text-muted">Discover what everyone is talking about</p>
+    </div>
+    <div id="trendingRow" class="row g-4"><div class="text-center">Loading high‑demand services...</div></div>
+    <div class="text-center mt-5">
+      <a href="stores.html" class="btn btn-outline-primary rounded-pill btn-lg px-5">View Full Catalog <i class="bi bi-arrow-right-circle ms-2"></i></a>
+    </div>
+  </div>
+</section>
+
+<!-- Blog Preview (Live) -->
+<section class="py-5">
+  <div class="container">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <span class="badge bg-success px-3 py-2 rounded-pill">📖 Fresh from the Blog</span>
+      <h2 class="fw-bold mt-3">Insights & Ideas</h2>
+      <p class="text-muted">Stay ahead with expert tips and industry news</p>
+    </div>
+    <div id="blogPreview" class="row g-4"><div class="text-center">Loading articles...</div></div>
+    <div class="text-center mt-5">
+      <a href="blog.html" class="btn btn-outline-secondary rounded-pill btn-lg px-5">Read All Posts <i class="bi bi-arrow-right ms-2"></i></a>
+    </div>
+  </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <div class="text-center mb-5" data-aos="fade-up">
+      <span class="badge bg-info px-3 py-2 rounded-pill">🌟 Why PremiumDev</span>
+      <h2 class="fw-bold mt-3">Engineered for Excellence</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4" data-aos="flip-left">
+        <div class="text-center p-4 bg-white rounded-4 shadow-sm h-100">
+          <div class="bg-primary bg-opacity-10 d-inline-block p-3 rounded-4 mb-3"><i class="bi bi-shield-check fs-1 text-primary"></i></div>
+          <h4>Military‑Grade Security</h4>
+          <p class="text-muted">Supabase RLS, encrypted endpoints, and full data ownership.</p>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="flip-up">
+        <div class="text-center p-4 bg-white rounded-4 shadow-sm h-100">
+          <div class="bg-warning bg-opacity-10 d-inline-block p-3 rounded-4 mb-3"><i class="bi bi-lightning-charge fs-1 text-warning"></i></div>
+          <h4>Sub‑second Response</h4>
+          <p class="text-muted">Global CDN, edge caching, and optimized queries.</p>
+        </div>
+      </div>
+      <div class="col-md-4" data-aos="flip-right">
+        <div class="text-center p-4 bg-white rounded-4 shadow-sm h-100">
+          <div class="bg-success bg-opacity-10 d-inline-block p-3 rounded-4 mb-3"><i class="bi bi-headset fs-1 text-success"></i></div>
+          <h4>24/7 Human Support</h4>
+          <p class="text-muted">Direct chat with engineers – no automated bots.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="py-4 mt-4">
+  <div class="container text-center">
+    <p class="mb-0">© 2026 All rights reserved. PremiumDev Web Solutions Agency.</p>
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  (function() {
+    AOS.init({ duration: 800, once: true });
+
+    const SUPABASE_URL = 'https://xzhmjigiddhzyrhqwgcw.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6aG1qaWdpZGRoenlyaHF3Z2N3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAyNzkzMjQsImV4cCI6MjA5NTg1NTMyNH0.-G9WLCr4zcK5lCg_nBqBVcClhHJH_xunpflCakaDMEw';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function escapeHtml(s) { if (!s) return ''; return String(s).replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); }
+    function formatPrice(p) { return `₹ ${Number(p).toLocaleString('en-IN')}`; }
+
+    function animateCounter(id, target) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      let current = 0;
+      const steps = 50;
+      const stepValue = target / steps;
+      let i = 0;
+      const timer = setInterval(() => {
+        i++;
+        if (i >= steps) {
+          el.innerText = target;
+          clearInterval(timer);
+        } else {
+          current += stepValue;
+          el.innerText = Math.floor(current);
+        }
+      }, 25);
+    }
+
+    async function loadStats() {
+      // 1. Total registered users (via RPC function)
+      let userCount = 0;
+      try {
+        const { data, error } = await supabase.rpc('get_total_users');
+        if (error) throw error;
+        userCount = data || 0;
+      } catch (err) {
+        console.warn('Using fallback user count', err);
+        userCount = 128;
+      }
+      animateCounter('happyCount', userCount);
+
+      // 2. Services count
+      let serviceCount = 0;
+      try {
+        const { count, error } = await supabase
+          .from('services')
+          .select('*', { count: 'exact', head: true });
+        if (error) throw error;
+        serviceCount = count || 0;
+      } catch (err) {
+        serviceCount = 12;
+      }
+      animateCounter('serviceCount', serviceCount);
+
+      // 3. Success rate
+      let successRate = 97.9;
+      try {
+        const { data, error } = await supabase
+          .from('site_stats')
+          .select('success_rate')
+          .eq('id', 1)
+          .single();
+        if (!error && data) successRate = data.success_rate;
+      } catch (err) {}
+      animateCounter('successRate', Math.round(successRate));
+    }
+
+    async function loadTrending() {
+      const { data, error } = await supabase.from('services').select('*').eq('is_trending', true).limit(3);
+      const row = document.getElementById('trendingRow');
+      if (error || !data || !data.length) {
+        row.innerHTML = `<div class="col-12 text-center">🚀 No trending services yet. Check back soon.</div>`;
+        return;
+      }
+      row.innerHTML = data.map(s => `
+        <div class="col-md-4" data-aos="flip-up">
+          <div class="service-card card h-100 position-relative">
+            <span class="trending-badge"><i class="bi bi-fire"></i> Trending</span>
+            <img src="${s.image_url || 'https://placehold.co/600x400/e2e8f0/1e293b?text=Service'}" class="service-img card-img-top" alt="${escapeHtml(s.name)}">
+            <div class="card-body">
+              <h5 class="fw-bold">${escapeHtml(s.name)}</h5>
+              <p class="text-muted small">${escapeHtml(s.description?.slice(0, 85) || '')}...</p>
+              <div class="d-flex justify-content-between align-items-center mt-3">
+                <span class="fw-bold text-primary fs-5">${formatPrice(s.price)}</span>
+                <a href="stores.html?service=${s.id}" class="btn btn-sm btn-outline-primary rounded-pill px-3">Order →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      AOS.refresh();
+    }
+
+    async function loadBlogPreview() {
+      const { data, error } = await supabase.from('blogs').select('id, title, image_url, created_at').order('created_at', { ascending: false }).limit(3);
+      const container = document.getElementById('blogPreview');
+      if (error || !data || !data.length) {
+        container.innerHTML = `<div class="col-12 text-center">📝 No blog posts yet. Stay tuned!</div>`;
+        return;
+      }
+      container.innerHTML = data.map(post => `
+        <div class="col-md-4" data-aos="fade-up">
+          <div class="blog-card h-100">
+            <img src="${post.image_url || 'https://placehold.co/600x400/e2e8f0/1e293b?text=Blog'}" class="card-img-top" style="height: 200px; object-fit: cover;" alt="${escapeHtml(post.title)}">
+            <div class="card-body">
+              <h5 class="card-title">${escapeHtml(post.title)}</h5>
+              <small class="text-muted"><i class="bi bi-calendar3"></i> ${new Date(post.created_at).toDateString()}</small>
+              <a href="blog.html?post=${post.id}" class="btn btn-link text-primary p-0 mt-2 d-block">Read full article →</a>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    loadStats();
+    loadTrending();
+    loadBlogPreview();
+
+    const darkBtn = document.getElementById('darkModeBtn');
+    darkBtn.addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      localStorage.setItem('darkMode', document.body.classList.contains('dark-mode'));
+      darkBtn.innerHTML = document.body.classList.contains('dark-mode') ? '<i class="bi bi-sun"></i>' : '<i class="bi bi-moon-stars"></i>';
+    });
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+      darkBtn.innerHTML = '<i class="bi bi-sun"></i>';
+    }
+  })();
+</script>
+</body>
+</html>
